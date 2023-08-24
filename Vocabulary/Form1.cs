@@ -16,10 +16,13 @@ namespace Vocabulary
         private List<string> englishWords = new List<string>();
         private List<string> turkishWords = new List<string>();
         private List<string> dates = new List<string>();
+        private List<string> fulldates = new List<string>();
         private Random random = new Random();
         private Button[] answerButtons;
         private string currentEnglishWord;
         private string correctTurkishTranslation;
+        private List<string> filteredEnglishWords = new List<string>();
+        private List<string> filteredTurkishWords = new List<string>();
         int doğru = 0;
         int yanlış = 0;
         int ToplamSayı = -1;
@@ -27,8 +30,8 @@ namespace Vocabulary
         {
             InitializeComponent();
             InitializeWordLists();
-            ctarih.DataSource = dates;
             answerButtons = new Button[] { button1, button2, button3, button4 };
+            ctarih.DataSource = dates;
             ShowRandomWord();
         }
         private void InitializeWordLists()
@@ -50,6 +53,7 @@ namespace Vocabulary
                 {
                     englishWords.Add(englishWord);
                     turkishWords.Add(turkishWord);
+                    fulldates.Add(düzgüntarih);
                     if (!dates.Contains("All"))
                     {
                         dates.Add("All");
@@ -64,36 +68,36 @@ namespace Vocabulary
         }
         private void ShowRandomWord()
         {
+                int randomIndex = random.Next(filteredEnglishWords.Count);
+                currentEnglishWord = filteredEnglishWords[randomIndex];
+                correctTurkishTranslation = filteredTurkishWords[randomIndex];
 
-            int randomIndex = random.Next(englishWords.Count);
-            currentEnglishWord = englishWords[randomIndex];
-            correctTurkishTranslation = turkishWords[randomIndex];
+                Soru.Text = currentEnglishWord;
 
-            Soru.Text = currentEnglishWord;
+                // Sadece doğru çevabı bir butona yerleştirin
+                int correctButtonIndex = random.Next(answerButtons.Length);
+                answerButtons[correctButtonIndex].Text = correctTurkishTranslation;
 
-            // Sadece doğru çevabı bir butona yerleştirin
-            int correctButtonIndex = random.Next(answerButtons.Length);
-            answerButtons[correctButtonIndex].Text = correctTurkishTranslation;
-
-            // Diğer butonlara farklı cevapları yerleştirin
-            for (int i = 0; i < answerButtons.Length; i++)
-            {
-                if (i != correctButtonIndex)
+                // Diğer butonlara farklı cevapları yerleştirin
+                for (int i = 0; i < answerButtons.Length; i++)
                 {
-                    string incorrectTranslation = GetRandomIncorrectTranslation();
-                    answerButtons[i].Text = incorrectTranslation;
+                    if (i != correctButtonIndex)
+                    {
+                        string incorrectTranslation = GetRandomIncorrectTranslation();
+                        answerButtons[i].Text = incorrectTranslation;
+                    }
                 }
-            }
-            ToplamSayı++;
-            ToplamSoru.Text = ToplamSayı.ToString();
+                ToplamSayı++;
+                ToplamSoru.Text = ToplamSayı.ToString();
+            
         }
         private string GetRandomIncorrectTranslation()
         {
             string randomIncorrectTranslation;
             do
             {
-                int randomIndex = random.Next(turkishWords.Count);
-                randomIncorrectTranslation = turkishWords[randomIndex];
+                int randomIndex = random.Next(filteredTurkishWords.Count);
+                randomIncorrectTranslation = filteredTurkishWords[randomIndex];
             } while (randomIncorrectTranslation == correctTurkishTranslation);
 
             return randomIncorrectTranslation;
@@ -133,5 +137,30 @@ namespace Vocabulary
             ShowRandomWord();
         }
         private void ctarih_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            answerButtons = new Button[] { button1, button2, button3, button4 };
+            string selectedDate = ctarih.SelectedItem.ToString();
+            filteredEnglishWords.Clear();
+            filteredTurkishWords.Clear();
+
+            if (selectedDate == "All")
+            {
+                filteredEnglishWords = englishWords.ToList(); // englishWords'in kopyasını al
+                filteredTurkishWords = turkishWords.ToList(); // turkishWords'ün kopyasını al
+            }
+            else
+            {
+                for (int i = 0; i < fulldates.Count; i++)
+                {
+                    if (fulldates[i] == selectedDate)
+                    {
+                        filteredEnglishWords.Add(englishWords[i]);
+                        filteredTurkishWords.Add(turkishWords[i]);
+                    }
+                }
+            }
+            ToplamSayı--;
+            ShowRandomWord();
+        }
     }
 }
