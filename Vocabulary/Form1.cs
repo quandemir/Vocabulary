@@ -132,10 +132,6 @@ namespace Vocabulary
 
             ShowRandomWord();
         }
-
         private void ctarih_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }
